@@ -1,0 +1,13 @@
+archive/
+embedding_result/
+old_archive2/
+plots/
+results/
+results_10_april/
+results_pecs/
+results_pecs_temperature_0-6/
+try_launch8_back_0_0.1/
+tryfile_0_0.01/
+*.pkl
+traj3.ipynb
+traj4.ipynb
