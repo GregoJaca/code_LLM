@@ -11,3 +11,7 @@ tryfile_0_0.01/
 *.pkl
 traj3.ipynb
 traj4.ipynb
+*.png
+*.pt
+*.docx
+GEMINI.md
