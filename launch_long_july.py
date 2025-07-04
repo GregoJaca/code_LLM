@@ -128,8 +128,8 @@ def process_prompt(prompt, model, tokenizer, device, max_length, result_dir):
                 past_key_values = DynamicCache.from_legacy_cache(past_key_values=tuple(new_cache))
 
 
-            if next_token.item() == tokenizer.eos_token_id:
-                break
+            # if next_token.item() == tokenizer.eos_token_id:
+            #     break
                 
     # Decode the generated text
     generated_text = tokenizer.decode(generated_tokens, skip_special_tokens=True)
@@ -180,9 +180,9 @@ def top_p_filtering(logits, top_p=0.95, filter_value=-float("Inf")):
     return logits
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-MAX_LENGTH = 1000 # 65536
+MAX_LENGTH = 32768 
 TEMPERATURE = 0.6
-ATTENTION_WINDOW_SIZE = 256 # 4096
+ATTENTION_WINDOW_SIZE = 4096
 
 print(f"Using device: {DEVICE}")
 
@@ -196,10 +196,10 @@ try:
 except Exception:
     attn_impl = "sdpa"
 
-# MODEL_NAME = "deepseek‑ai/DeepSeek‑R1‑Distill‑Qwen‑14B" 
-# LOCAL_DIR = "deepseek_r1_14b"   # local path to save the model
-MODEL_NAME = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
-LOCAL_DIR = "."   # local path to save the model
+MODEL_NAME = "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B" 
+LOCAL_DIR = "deepseek_r1_14b"   # local path to save the model
+# MODEL_NAME = "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B"
+# LOCAL_DIR = "."   # local path to save the model
 
 
 quant_config = BitsAndBytesConfig(
@@ -212,7 +212,7 @@ quant_config = BitsAndBytesConfig(
 model = AutoModelForCausalLM.from_pretrained(
     MODEL_NAME,
     cache_dir=LOCAL_DIR,
-    # quantization_config=quant_config,
+    quantization_config=quant_config,
     device_map="auto",
     torch_dtype=torch.float16,
     trust_remote_code=True,
@@ -231,21 +231,23 @@ model.eval()
 
 prompts = [
     # Space Technology Conversation
-#     """Generate a continuous conversation about interstellar propulsion systems using strict JSON format. Alternate between user questions and assistant answers. Maintain technical depth while naturally progressing through topics. Begin with:
-# {"role": "user", "content": "Provide a comprehensive technical review of current and proposed propulsion systems for interstellar travel. Compare chemical rockets, nuclear propulsion, laser sails, antimatter drives, and other theoretical concepts in terms of energy requirements, achievable speeds, technological feasibility, and projected timelines for development."}""",
+    """Generate a continuous conversation about interstellar propulsion systems using strict JSON format. Alternate between user questions and assistant answers. Maintain technical depth while naturally progressing through topics. Begin with:
+{"role": "user", "content": "Provide a comprehensive technical review of current and proposed propulsion systems for interstellar travel. Compare chemical rockets, nuclear propulsion, laser sails, antimatter drives, and other theoretical concepts in terms of energy requirements, achievable speeds, technological feasibility, and projected timelines for development."}""",
 
-"Provide a comprehensive technical review of current and proposed propulsion systems for interstellar travel. Compare chemical rockets, nuclear propulsion, laser sails, antimatter drives, and other theoretical concepts in terms of energy requirements, achievable speeds, technological feasibility, and projected timelines for development. Include discussion of the Breakthrough Starshot initiative and other major projects. Please reason step by step, and put the final answer inside \boxed{ }."
-
+    # Psychology Conversation
+    """Create an ongoing dialogue about childhood development using strict JSON formatting. Alternate roles with each message, maintaining academic depth while exploring new aspects. Start with:
+{"role": "user", "content": "Examine how childhood experiences shape personality development. Discuss various influences including family environment, education, friendships, and significant life events. Explain psychological concepts like attachment theory and nature vs. nurture in accessible terms. Provide examples of how positive and negative experiences can affect adult personality traits and behaviors."}"""
 ]
 
 prompt_names = [
     "interstellar_propulsion_review",       # Space Technology (Detailed Technical Review)
+    "childhood_personality_development",
 ]
 
 
 
 
-main_results_dir = "try_new_model" #
+main_results_dir = "long_run_sliding_attention" #
 ensure_dir(main_results_dir)
 
 for i, prompt in enumerate(prompts):
